@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<com.aidlmusicplayer.www.ui.PlayerDiscView
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/player_disc_container"
+        android:layout_width="@dimen/player_disc_size"
+        android:layout_height="@dimen/player_disc_size"
+        android:layout_centerInParent="true"
+        android:background="@drawable/disc_base"
+        android:padding="5dp"
+        android:layout_margin="@dimen/player_disc_container_marign">
+
+        <ImageView
+            android:id="@+id/player_disc"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:src="@drawable/disc"/>
+
+        <ImageView
+            android:id="@+id/player_disc_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/player_disc"
+            android:layout_alignLeft="@id/player_disc"
+            android:layout_alignRight="@id/player_disc"
+            android:layout_alignTop="@id/player_disc"
+            android:layout_margin="45dp"
+            android:scaleType="centerCrop" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/player_needle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/player_disc_container"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="50dp"
+        android:layout_marginRight="5dp"
+        android:src="@drawable/stick"/>
+
+</com.aidlmusicplayer.www.ui.PlayerDiscView>
