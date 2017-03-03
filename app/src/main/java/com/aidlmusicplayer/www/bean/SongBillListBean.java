@@ -1,5 +1,8 @@
 package com.aidlmusicplayer.www.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 /**
@@ -10,7 +13,7 @@ import java.util.List;
  * Created by Administrator on 2017/3/3.
  */
 
-public class SongBillListBean {
+public class SongBillListBean implements Parcelable {
 
 
 
@@ -18,7 +21,33 @@ public class SongBillListBean {
     public String error_code;
     public List<SongListBean> song_list;
 
-    public static class BillboardBean {
+    protected SongBillListBean(Parcel in) {
+        error_code = in.readString();
+    }
+
+    public static final Creator<SongBillListBean> CREATOR = new Creator<SongBillListBean>() {
+        @Override
+        public SongBillListBean createFromParcel(Parcel in) {
+            return new SongBillListBean(in);
+        }
+
+        @Override
+        public SongBillListBean[] newArray(int size) {
+            return new SongBillListBean[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(error_code);
+    }
+
+    public static class BillboardBean implements Parcelable  {
     
 
         public String billboard_type;
@@ -33,53 +62,55 @@ public class SongBillListBean {
         public String pic_s260;
         public String pic_s210;
         public String web_url;
+
+        protected BillboardBean(Parcel in) {
+            billboard_type = in.readString();
+            billboard_no = in.readString();
+            update_date = in.readString();
+            billboard_songnum = in.readString();
+            havemore = in.readString();
+            name = in.readString();
+            comment = in.readString();
+            pic_s640 = in.readString();
+            pic_s444 = in.readString();
+            pic_s260 = in.readString();
+            pic_s210 = in.readString();
+            web_url = in.readString();
+        }
+
+        public static final Creator<BillboardBean> CREATOR = new Creator<BillboardBean>() {
+            @Override
+            public BillboardBean createFromParcel(Parcel in) {
+                return new BillboardBean(in);
+            }
+
+            @Override
+            public BillboardBean[] newArray(int size) {
+                return new BillboardBean[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(billboard_type);
+            dest.writeString(billboard_no);
+            dest.writeString(update_date);
+            dest.writeString(billboard_songnum);
+            dest.writeString(havemore);
+            dest.writeString(name);
+            dest.writeString(comment);
+            dest.writeString(pic_s640);
+            dest.writeString(pic_s444);
+            dest.writeString(pic_s260);
+            dest.writeString(pic_s210);
+            dest.writeString(web_url);
+        }
     }
 
-    public static class SongListBean {
-       
 
-        public String artist_id;
-        public String language;
-        public String pic_big;
-        public String pic_small;
-        public String country;
-        public String area;
-        public String publishtime;
-        public String album_no;
-        public String lrclink;
-        public String copy_type;
-        public String hot;
-        public String all_artist_ting_uid;
-        public String resource_type;
-        public String is_new;
-        public String rank_change;
-        public String rank;
-        public String all_artist_id;
-        public String style;
-        public String del_status;
-        public String relate_status;
-        public String toneid;
-        public String all_rate;
-        public String file_duration;
-        public String has_mv_mobile;
-        public String versions;
-        public String bitrate_fee;
-        public String song_id;
-        public String title;
-        public String ting_uid;
-        public String author;
-        public String album_id;
-        public String album_title;
-        public String is_first_publish;
-        public String havehigh;
-        public String charge;
-        public String has_mv;
-        public String learn;
-        public String song_source;
-        public String piao_id;
-        public String korean_bb_song;
-        public String resource_type_ext;
-        public String mv_provider;
-        public String artist_name;
-    }
 }

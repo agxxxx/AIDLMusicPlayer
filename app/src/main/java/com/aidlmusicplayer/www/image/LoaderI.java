@@ -2,10 +2,6 @@ package com.aidlmusicplayer.www.image;
 
 import android.content.Context;
 
-/**
- * Created by zjl on 16-9-27.
- */
-
 public interface LoaderI {
 
     void load(Context context, ImageLoader var1);
