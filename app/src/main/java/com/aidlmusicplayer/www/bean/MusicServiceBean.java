@@ -17,6 +17,8 @@ public class MusicServiceBean implements Parcelable {
     public ArrayList<SongListBean> song_list;
     public int position;
     public int seekProgress;
+    public int totalDuration;
+
 
     public MusicServiceBean() {
     }
@@ -25,6 +27,7 @@ public class MusicServiceBean implements Parcelable {
         song_list = in.createTypedArrayList(SongListBean.CREATOR);
         position = in.readInt();
         seekProgress = in.readInt();
+        totalDuration = in.readInt();
     }
 
     public static final Creator<MusicServiceBean> CREATOR = new Creator<MusicServiceBean>() {
@@ -49,5 +52,6 @@ public class MusicServiceBean implements Parcelable {
         dest.writeTypedList(song_list);
         dest.writeInt(position);
         dest.writeInt(seekProgress);
+        dest.writeInt(totalDuration);
     }
 }

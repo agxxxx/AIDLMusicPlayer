@@ -16,7 +16,7 @@ public abstract  class NetCallBack<M> implements Callback<M> {
 
     public abstract void onSuccess(M m);
 
-    public abstract void onFailure(String msg);
+    public  void onFailure(String msg){};
 
     public  void onFinish(){};
 
