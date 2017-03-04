@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("ALL")
@@ -17,7 +17,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
 
     private OnItemClickListener<T> mOnItemClickListener;
     private OnItemLongClickListener<T> mOnLongClickListener;
-    private List<T> mDatum = new LinkedList<>();
+    private List<T> mDatum = new ArrayList<>();
 
     public BaseRecyclerViewAdapter(List<T> mDatas) {
         if (!mDatas.isEmpty()) {
@@ -25,6 +25,10 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Re
         }
     }
 
+
+    public List<T> getDatum() {
+        return mDatum;
+    }
 
     public interface OnItemClickListener<T> {
         void onItemClick(View view, int position, T info);

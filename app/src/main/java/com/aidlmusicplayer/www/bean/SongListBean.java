@@ -11,7 +11,7 @@ import android.os.Parcelable;
  * Created by Administrator on 2017/3/3.
  */
 
-public  class SongListBean  implements Parcelable {
+public class SongListBean implements Parcelable {
 
     public String artist_id;
     public String language;
@@ -57,6 +57,7 @@ public  class SongListBean  implements Parcelable {
     public String mv_provider;
     public String artist_name;
 
+
     protected SongListBean(Parcel in) {
         artist_id = in.readString();
         language = in.readString();
@@ -101,6 +102,7 @@ public  class SongListBean  implements Parcelable {
         resource_type_ext = in.readString();
         mv_provider = in.readString();
         artist_name = in.readString();
+
     }
 
     public static final Creator<SongListBean> CREATOR = new Creator<SongListBean>() {
@@ -122,6 +124,7 @@ public  class SongListBean  implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+
         dest.writeString(artist_id);
         dest.writeString(language);
         dest.writeString(pic_big);

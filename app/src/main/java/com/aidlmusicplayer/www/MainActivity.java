@@ -9,6 +9,7 @@ import android.widget.ImageView;
 
 import com.aidlmusicplayer.www.activity.MusicActivity;
 import com.aidlmusicplayer.www.base.BaseRecyclerViewAdapter;
+import com.aidlmusicplayer.www.bean.MusicServiceBean;
 import com.aidlmusicplayer.www.bean.SongBillListBean;
 import com.aidlmusicplayer.www.bean.SongListBean;
 import com.aidlmusicplayer.www.config.Constant;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
     private XRecyclerView mRvContainer;
     private ArrayList<SongListBean> mSong_list = new ArrayList<>();
     private SongListAdapter mSongListAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,12 +50,11 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
     }
 
 
-
-
     int mType = 1;
     int mSize = 10;
     int mOffset = 0;
     int mPager = 0;
+
     private void loadData() {
         NetManager.
                 getInstance().getSongBillListData(mType,
@@ -67,16 +68,16 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
                         mRvContainer.refreshComplete();
                         mRvContainer.loadMoreComplete();
                     }
+
                     @Override
-                   public void onFailure(String msg) {
-                        ToastUtil.showShortToast(MainActivity.this,msg);
+                    public void onFailure(String msg) {
+                        ToastUtil.showShortToast(MainActivity.this, msg);
+
                         mRvContainer.refreshComplete();
                         mRvContainer.loadMoreComplete();
                     }
                 });
     }
-
-
 
 
     private void initVie() {
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
     }
 
     class SongListAdapter extends BaseRecyclerViewAdapter<SongListBean>
-            implements BaseRecyclerViewAdapter.OnItemClickListener<SongListBean>{
+            implements BaseRecyclerViewAdapter.OnItemClickListener<SongListBean> {
         public SongListAdapter(List<SongListBean> mDatum) {
             super(mDatum);
         }
@@ -114,22 +115,23 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         protected int getItemLayoutId() {
             return R.layout.item_music;
         }
+
         @Override
         protected void onBind(ViewHolder holder, int position, SongListBean data) {
             ImageView imageView = holder.getImageView(R.id.iv_icon);
             ImageLoaderProxy.getInstance().
                     transform(MainActivity.this, data.pic_big, imageView);
-            holder.setTextView(R.id.tv_name,data.title);
+            holder.setTextView(R.id.tv_name, data.title);
         }
 
 
         @Override
         public void onItemClick(View view, int position, SongListBean info) {
-
-
             Intent intent = new Intent(MainActivity.this, MusicActivity.class);
-            intent.putExtra(Constant.TAG_VAL_1,  mSong_list);
-
+            MusicServiceBean musicServiceBean = new MusicServiceBean();
+            musicServiceBean.song_list = (ArrayList<SongListBean>) mSongListAdapter.getDatum();
+            musicServiceBean.position = position;
+            intent.putExtra(Constant.TAG_FLAG_1, musicServiceBean);
             startActivity(intent);
         }
     }

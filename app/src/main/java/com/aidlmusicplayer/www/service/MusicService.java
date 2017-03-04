@@ -10,6 +10,12 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.aidlmusicplayer.www.IMusicPlayer;
+import com.aidlmusicplayer.www.bean.MusicServiceBean;
+import com.aidlmusicplayer.www.bean.PaySongBean;
+import com.aidlmusicplayer.www.bean.SongListBean;
+import com.aidlmusicplayer.www.helper.GsonHelper;
+import com.aidlmusicplayer.www.net.NetCallBack;
+import com.aidlmusicplayer.www.net.NetManager;
 import com.aidlmusicplayer.www.util.ToastUtil;
 
 /**
@@ -44,7 +50,7 @@ public class MusicService extends Service implements
     Binder mBinder = new IMusicPlayer.Stub() {
         @Override
         public void action(int action, String datum) throws RemoteException {
-            ToastUtil.showShortToast(getApplicationContext(), "datum:" + action);
+            ToastUtil.showShortToast(getApplicationContext(), "datum:" + datum + "  action:" + action);
             switch (action) {
                 case MUSIC_ACTION_PAUSE:
                     pause();
@@ -56,7 +62,18 @@ public class MusicService extends Service implements
                     seekPlay(Integer.parseInt(datum));
                     break;
                 case MUSIC_ACTION_PLAY:
-                    play(datum);
+                    MusicServiceBean musicServiceBean = GsonHelper.getGson().fromJson(datum, MusicServiceBean.class);
+                    SongListBean songListBean = musicServiceBean.song_list.get(musicServiceBean.position);
+                    String song_id = songListBean.song_id;
+                    NetManager.getInstance().getPaySongData(song_id, new NetCallBack<PaySongBean>() {
+                        @Override
+                        public void onSuccess(PaySongBean paySongBean) {
+                            play(paySongBean.bitrate.file_link);
+                        }
+                        @Override
+                        public void onFailure(String msg) {
+                        }
+                    });
                     break;
                 case MUSIC_ACTION_CONTINUE_PLAY:
                     continuePlay();
@@ -76,7 +93,6 @@ public class MusicService extends Service implements
     };
 
 
-
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -87,19 +103,14 @@ public class MusicService extends Service implements
     @Override
     public void onCreate() {
         mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setOnErrorListener(this);//设置资源的时候出错了
-        mMediaPlayer.setOnPreparedListener(this);//设置资源的时候出错了
-        mMediaPlayer.setOnCompletionListener(this);//设置资源的时候出错了
+        mMediaPlayer.setOnErrorListener(this);
+        mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnCompletionListener(this);
 
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
                 requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         super.onCreate();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
     }
 
 
@@ -150,8 +161,7 @@ public class MusicService extends Service implements
     /******************************************************************/
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-
-        ToastUtil.showShortToast(this, "资源出错了");
+        ToastUtil.showShortToast(this, "error ...");
         return true;
     }
 
@@ -169,26 +179,26 @@ public class MusicService extends Service implements
     @Override
     public void onAudioFocusChange(int focusChange) {
         switch (focusChange) {
-            case AudioManager.AUDIOFOCUS_GAIN://你已经得到了音频焦点。
+            case AudioManager.AUDIOFOCUS_GAIN:
                 // resume playback
                 mMediaPlayer.start();
                 mMediaPlayer.setVolume(1.0f, 1.0f);
                 break;
-            case AudioManager.AUDIOFOCUS_LOSS://你已经失去了音频焦点很长时间了。你必须停止所有的音频播放
+            case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
                 if (mMediaPlayer.isPlaying())
                     mMediaPlayer.stop();
                 mMediaPlayer.release();
                 mMediaPlayer = null;
                 break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT://你暂时失去了音频焦点
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 // Lost focus for a short time, but we have to stop
                 // playback. We don't release the media player because playback
                 // is likely to resume
                 if (mMediaPlayer.isPlaying())
                     mMediaPlayer.pause();
                 break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK://你暂时失去了音频焦点，但你可以小声地继续播放音频（低音量）而不是完全扼杀音频。
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
                 if (mMediaPlayer.isPlaying())

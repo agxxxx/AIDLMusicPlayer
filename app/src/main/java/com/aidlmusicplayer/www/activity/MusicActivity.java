@@ -20,14 +20,17 @@ import android.widget.TextView;
 
 import com.aidlmusicplayer.www.IMusicPlayer;
 import com.aidlmusicplayer.www.R;
+import com.aidlmusicplayer.www.bean.MusicServiceBean;
 import com.aidlmusicplayer.www.blur.ImageBlurManager;
+import com.aidlmusicplayer.www.config.Constant;
+import com.aidlmusicplayer.www.helper.GsonHelper;
 import com.aidlmusicplayer.www.service.MusicService;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MusicActivity extends AppCompatActivity {
+public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
 
     @Bind(R.id.musics_player_background)
@@ -46,8 +49,7 @@ public class MusicActivity extends AppCompatActivity {
     TextView mMusicsPlayerSongerName;
     @Bind(R.id.musics_player_current_time)
     TextView mMusicsPlayerCurrentTime;
-    @Bind(R.id.musics_player_seekbar)
-    SeekBar mMusicsPlayerSeekbar;
+
     @Bind(R.id.musics_player_total_time)
     TextView mMusicsPlayerTotalTime;
     @Bind(R.id.musics_player_progress_container)
@@ -64,23 +66,38 @@ public class MusicActivity extends AppCompatActivity {
     RelativeLayout mMusicsPlayerContainer;
     private IMusicPlayer mMusicPlayer;
 
+    @Bind(R.id.musics_player_seekbar)
+    SeekBar mMusicsPlayerSeekbar;
+    private MusicServiceBean mMusicServiceBean;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music);
         ButterKnife.bind(this);
 
-        setTitle("音乐");
         Intent intent = new Intent(this, MusicService.class);
         bindService(intent, mServiceConnection, Service.BIND_AUTO_CREATE);
+
+
+        mMusicServiceBean = getIntent().getParcelableExtra(Constant.TAG_FLAG_1);
+        setTitle(mMusicServiceBean.song_list.get(mMusicServiceBean.position).title);
+
+
 
         Bitmap bitmap = ImageBlurManager.doBlurJniArray(BitmapFactory.decodeResource(getResources(),
                 R.drawable.player_bg),
                 100,
                 false);
+
         //  blur background
         mMusicsPlayerBackground.setImageBitmap(bitmap);
-
+        mMusicsPlayerSeekbar.setOnSeekBarChangeListener(this);
+//        try {
+// mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
+//        } catch (RemoteException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -90,7 +107,11 @@ public class MusicActivity extends AppCompatActivity {
             mMusicPlayer = IMusicPlayer.Stub.asInterface(service);
 
             try {
+
+                mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
                 mMusicPlayer.asBinder().linkToDeath(mDeathRecipient, 0);
+
+//
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -99,7 +120,6 @@ public class MusicActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
         }
     };
 
@@ -111,15 +131,21 @@ public class MusicActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+
+    }
+
+    /******************************************************************/
 
     @OnClick({R.id.musics_player_play_prev_btn, R.id.musics_player_play_ctrl_btn, R.id.musics_player_play_next_btn})
     public void onClick(View view) {
         try {
             switch (view.getId()) {
                 case R.id.musics_player_play_prev_btn:
-
                     mMusicPlayer.action(MusicService.MUSIC_ACTION_PREVIOUS, "");
-
 
                     break;
                 case R.id.musics_player_play_ctrl_btn:
@@ -128,7 +154,7 @@ public class MusicActivity extends AppCompatActivity {
 
                     break;
                 case R.id.musics_player_play_next_btn:
-                    
+
                     mMusicPlayer.action(MusicService.MUSIC_ACTION_NEXT, "");
 
                     break;
@@ -141,18 +167,36 @@ public class MusicActivity extends AppCompatActivity {
     private void onPayBtnPress() throws RemoteException {
         switch (MusicService.MUSIC_CURRENT_ACTION) {
             case MusicService.MUSIC_ACTION_PLAY:
-
                 mMusicPlayer.action(MusicService.MUSIC_ACTION_PAUSE, "");
                 break;
             case MusicService.MUSIC_ACTION_STOP:
-
-                mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, "");
+                mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
                 break;
             case MusicService.MUSIC_ACTION_PAUSE:
-
                 mMusicPlayer.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
+
                 break;
         }
+    }
+
+    /******************************************************************/
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        seekBar.setProgress(seekBar.getProgress());
+        try {
+            mMusicPlayer.action(MusicService.MUSIC_ACTION_SEEK_PLAY, String.valueOf(progress));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
 }

@@ -9,10 +9,10 @@ package com.aidlmusicplayer.www.config;
  */
 
 public interface Constant {
-    String TAG_VAL_1 = "TAG_VAL_1";
-    String TAG_VAL_2 = "TAG_VAL_2";
-    String TAG_VAL_3 = "TAG_VAL_3";
-    String TAG_VAL_4 = "TAG_VAL_4";
-    String TAG_VAL_5 = "TAG_VAL_5";
+    String TAG_FLAG_1 = "TAG_FLAG_1";
+    String TAG_FLAG_2 = "TAG_FLAG_2";
+    String TAG_FLAG_3 = "TAG_FLAG_3";
+    String TAG_FLAG_4 = "TAG_FLAG_4";
+    String TAG_FLAG_5 = "TAG_FLAG_5";
 
 }
