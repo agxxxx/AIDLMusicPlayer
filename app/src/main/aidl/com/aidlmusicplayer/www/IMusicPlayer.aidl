@@ -15,7 +15,7 @@ interface IMusicPlayer {
 //            double aDouble, String aString);
 
 
-        void action(in int action ,in String json);
+        void action(in int action ,in String datum);
 
 
 }

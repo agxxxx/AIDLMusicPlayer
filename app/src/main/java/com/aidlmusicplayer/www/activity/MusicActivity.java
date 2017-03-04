@@ -78,9 +78,8 @@ public class MusicActivity extends AppCompatActivity {
                 R.drawable.player_bg),
                 100,
                 false);
-//        blur background
+        //  blur background
         mMusicsPlayerBackground.setImageBitmap(bitmap);
-
 
 
     }
@@ -113,32 +112,47 @@ public class MusicActivity extends AppCompatActivity {
     };
 
 
-
-
     @OnClick({R.id.musics_player_play_prev_btn, R.id.musics_player_play_ctrl_btn, R.id.musics_player_play_next_btn})
-    public void onClick(View view)  {
-        switch (view.getId()) {
-            case R.id.musics_player_play_prev_btn:
-                try {
-                    mMusicPlayer.lastMusic();
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+    public void onClick(View view) {
+        try {
+            switch (view.getId()) {
+                case R.id.musics_player_play_prev_btn:
+
+                    mMusicPlayer.action(MusicService.MUSIC_ACTION_PREVIOUS, "");
+
+
+                    break;
+                case R.id.musics_player_play_ctrl_btn:
+
+                    onPayBtnPress();
+
+                    break;
+                case R.id.musics_player_play_next_btn:
+                    
+                    mMusicPlayer.action(MusicService.MUSIC_ACTION_NEXT, "");
+
+                    break;
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void onPayBtnPress() throws RemoteException {
+        switch (MusicService.MUSIC_CURRENT_ACTION) {
+            case MusicService.MUSIC_ACTION_PLAY:
+
+                mMusicPlayer.action(MusicService.MUSIC_ACTION_PAUSE, "");
                 break;
-            case R.id.musics_player_play_ctrl_btn:
-                try {
-                    mMusicPlayer.playMusic("dd");
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+            case MusicService.MUSIC_ACTION_STOP:
+
+                mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, "");
                 break;
-            case R.id.musics_player_play_next_btn:
-                try {
-                    mMusicPlayer.nextMusic();
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+            case MusicService.MUSIC_ACTION_PAUSE:
+
+                mMusicPlayer.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
                 break;
         }
+
     }
 }
