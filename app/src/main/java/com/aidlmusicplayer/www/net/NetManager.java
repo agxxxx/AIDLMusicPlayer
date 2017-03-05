@@ -1,11 +1,17 @@
 package com.aidlmusicplayer.www.net;
 
+import com.aidlmusicplayer.www.BuildConfig;
 import com.aidlmusicplayer.www.api.MusicApi;
 import com.aidlmusicplayer.www.bean.PaySongBean;
 import com.aidlmusicplayer.www.bean.RecommandSongListBean;
 import com.aidlmusicplayer.www.bean.SearchSongBean;
 import com.aidlmusicplayer.www.bean.SongBillListBean;
+import com.aidlmusicplayer.www.net.log.AGLogInterceptor;
+
 import java.util.Map;
+
+import okhttp3.OkHttpClient;
+
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -20,6 +26,7 @@ public class NetManager {
 
     private Retrofit mRetrofit;
     private MusicApi mMusicApi;
+    private OkHttpClient mClient;
 
     /**
      * 播放音乐
@@ -94,13 +101,24 @@ public class NetManager {
         return instance;
     }
     MusicApi createMusicApi() {
+
+        if (mClient == null) {
+            OkHttpClient.Builder   builder = new OkHttpClient().newBuilder();
+            if(BuildConfig.DEBUG){
+                builder.addNetworkInterceptor(new AGLogInterceptor());
+            }
+            mClient = builder.build();
+        }
+
+
         if (mRetrofit == null) {
             mRetrofit = new Retrofit.Builder()
                     .baseUrl(MusicApi.MUSIC_BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(mClient)
                     .build();
-
         }
+
         if (mMusicApi == null) {
             mMusicApi = mRetrofit.create(MusicApi.class);
         }

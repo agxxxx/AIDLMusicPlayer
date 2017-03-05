@@ -15,4 +15,5 @@ public interface Constant {
     String TAG_FLAG_4 = "TAG_FLAG_4";
     String TAG_FLAG_5 = "TAG_FLAG_5";
 
+    int DEBUG_LEVEL = 10;
 }

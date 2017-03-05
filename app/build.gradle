@@ -19,6 +19,11 @@ android {
     }
 }
 
+repositories {
+    jcenter()
+    mavenCentral()  // GPUImage for Android
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -29,10 +34,16 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.3.0'
     //retrofit
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
-    // glide
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    //butterknife
 
+
+
+    // glide
+    compile 'jp.wasabeef:glide-transformations:2.0.1'
+    // If you want to use the GPU Filters
+    compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.3.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+
+    //butterknife
     compile 'com.jakewharton:butterknife:7.0.1'
 
     compile 'com.squareup.retrofit2:converter-gson:2.0.2'

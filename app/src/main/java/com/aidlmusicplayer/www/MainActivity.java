@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
             MusicServiceBean musicServiceBean = new MusicServiceBean();
             musicServiceBean.song_list = (ArrayList<SongListBean>) mSongListAdapter.getDatum();
             musicServiceBean.position = position;
+            musicServiceBean.backgroundUrl = info.pic_big;
             intent.putExtra(Constant.TAG_FLAG_1, musicServiceBean);
             startActivity(intent);
         }

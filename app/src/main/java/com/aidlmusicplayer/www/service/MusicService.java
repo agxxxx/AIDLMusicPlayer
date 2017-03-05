@@ -7,7 +7,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Messenger;
+import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
@@ -16,13 +16,14 @@ import com.aidlmusicplayer.www.IMusicPlayerListener;
 import com.aidlmusicplayer.www.bean.MusicServiceBean;
 import com.aidlmusicplayer.www.bean.PaySongBean;
 import com.aidlmusicplayer.www.bean.SongListBean;
-import com.aidlmusicplayer.www.config.Constant;
 import com.aidlmusicplayer.www.helper.GsonHelper;
 import com.aidlmusicplayer.www.net.NetCallBack;
 import com.aidlmusicplayer.www.net.NetManager;
 import com.aidlmusicplayer.www.util.ToastUtil;
 
+import java.util.ArrayList;
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * author：agxxxx on 2017/3/3 10:49
@@ -48,54 +49,60 @@ public class MusicService extends Service implements
     public static final int MUSIC_ACTION_SEEK_PLAY = 270;
 
     public static int MUSIC_CURRENT_ACTION = -1;
+
+    public static final int PLAYER_LISTENER_ACTION_NORMAL = 1001;
     /******************************************************************/
     private MediaPlayer mMediaPlayer;
     private Timer mTimer;
-    private Messenger mMessenger;
 
     private RemoteCallbackList<IMusicPlayerListener> mListenerList
             = new RemoteCallbackList<>();
 
 
     private int currentPosition;
+    private ArrayList<SongListBean> mSong_list = new ArrayList<>();
+
     Binder mBinder = new IMusicPlayer.Stub() {
         @Override
         public void action(int action, String datum) throws RemoteException {
             ToastUtil.showShortToast(getApplicationContext(), "datum:" + datum + "  action:" + action);
             switch (action) {
                 case MUSIC_ACTION_PAUSE:
-                    pause();
+                    pauseSong();
                     break;
                 case MUSIC_ACTION_STOP:
-                    stop();
+                    stopSong();
                     break;
                 case MUSIC_ACTION_SEEK_PLAY:
-                    seekPlay(Integer.parseInt(datum));
+                    seekPlaySong(Integer.parseInt(datum));
                     break;
                 case MUSIC_ACTION_PLAY:
                     MusicServiceBean musicServiceBean = GsonHelper.getGson().fromJson(datum, MusicServiceBean.class);
                     currentPosition = musicServiceBean.position;
-                    SongListBean songListBean = musicServiceBean.song_list.get(currentPosition);
-                    String song_id = songListBean.song_id;
-                    NetManager.getInstance().getPaySongData(song_id, new NetCallBack<PaySongBean>() {
-                        @Override
-                        public void onSuccess(PaySongBean paySongBean) {
-                            play(paySongBean.bitrate.file_link);
-                        }
-                    });
+                    mSong_list.clear();
+                    mSong_list.addAll(musicServiceBean.song_list);
+                    play();
                     break;
                 case MUSIC_ACTION_CONTINUE_PLAY:
-                    continuePlay();
+                    continuePlaySong();
                     break;
                 /******************************************************************/
                 case MUSIC_ACTION_MUTE:
 
                     break;
                 case MUSIC_ACTION_PREVIOUS:
-
+                    if (currentPosition > 0) {
+                        currentPosition--;
+                    } else {
+                        currentPosition = mSong_list.size() - 1;
+                    }
+                    play();
                     break;
                 case MUSIC_ACTION_NEXT:
-
+                    if (++currentPosition >= mSong_list.size()) {
+                        currentPosition = 0;
+                    }
+                    play();
                     break;
             }
         }
@@ -112,9 +119,29 @@ public class MusicService extends Service implements
         }
     };
 
+    private void play() {
+        SongListBean songListBean = mSong_list.get(currentPosition);
+        String song_id = songListBean.song_id;
+        NetManager.getInstance().getPaySongData(song_id, new NetCallBack<PaySongBean>() {
+            @Override
+            public void onSuccess(PaySongBean paySongBean) {
+                if (paySongBean != null && paySongBean.bitrate != null) {
+                    playSong(paySongBean.bitrate.file_link);
+                }else{
+                    ToastUtil.showShortToast(getApplicationContext(), "音乐播放出错了");
+                }
+            }
+            @Override
+            public void onFailure(String msg) {
+                ToastUtil.showShortToast(getApplicationContext(), msg);
+            }
+        });
+    }
+
 
     @Override
     public IBinder onBind(Intent intent) {
+//        mMessenger = intent.getParcelableExtra(Constant.TAG_FLAG_5);
         // TODO: Return the communication channel to the service.
         return mBinder;
     }
@@ -126,15 +153,10 @@ public class MusicService extends Service implements
         mMediaPlayer.setOnErrorListener(this);
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
+
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
                 requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         super.onCreate();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        mMessenger = intent.getParcelableExtra(Constant.TAG_FLAG_5);
-        return super.onStartCommand(intent, flags, startId);
     }
 
 
@@ -151,7 +173,7 @@ public class MusicService extends Service implements
     /******************************************************************/
 
 
-    public void play(String path) {
+    public void playSong(String path) {
         try {
             mMediaPlayer.reset();//idle
             mMediaPlayer.setDataSource(path);
@@ -164,7 +186,7 @@ public class MusicService extends Service implements
         }
     }
 
-    public void pause() {
+    public void pauseSong() {
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             MUSIC_CURRENT_ACTION = MUSIC_ACTION_PAUSE;
@@ -172,7 +194,7 @@ public class MusicService extends Service implements
     }
 
 
-    public void continuePlay() {
+    public void continuePlaySong() {
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying()) {
             mMediaPlayer.start();
             MUSIC_CURRENT_ACTION = MUSIC_ACTION_PLAY;
@@ -180,7 +202,7 @@ public class MusicService extends Service implements
     }
 
 
-    public void stop() {
+    public void stopSong() {
         if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             MUSIC_CURRENT_ACTION = MUSIC_ACTION_STOP;
@@ -192,7 +214,7 @@ public class MusicService extends Service implements
 
     }
 
-    public void seekPlay(int progress) {
+    public void seekPlaySong(int progress) {
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.seekTo(progress);
         }
@@ -208,38 +230,36 @@ public class MusicService extends Service implements
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                super.run();
-//                if (mTimer == null) {
-//                    mTimer = new Timer();
-//                }
-//                mTimer.schedule(new TimerTask() {
-//                    @Override
-//                    public void run() {
-//                        MusicServiceBean musicServiceBean;
-//                        try {
-//                            final int N = mListenerList.beginBroadcast();
-//                            for (int i = 0; i < N; i++) {
-//                                IMusicPlayerListener broadcastItem = mListenerList.getBroadcastItem(i);
-//                                if (broadcastItem != null) {
-//                                    musicServiceBean = new MusicServiceBean();
-//                                    musicServiceBean.totalDuration = mMediaPlayer.getDuration();
-//                                    musicServiceBean.seekProgress = mMediaPlayer.getCurrentPosition();
-//                                    broadcastItem.action(MUSIC_ACTION_SEEK_PLAY,
-//                                            GsonHelper.getGson().toJson(musicServiceBean));
-//                                }
-//                            }
-//                            mListenerList.finishBroadcast();
-//                        } catch (RemoteException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }, 0, 1000);
-//            }
-//        }.start();
+        if (mTimer == null) {
+            mTimer = new Timer();
+        }
+        mTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                onPaying();
+            }
+        }, 0, 1000);
+    }
 
+    private void onPaying() {
+        try {
+            int currentPosition = mMediaPlayer.getCurrentPosition();
+            int totalDuration = mMediaPlayer.getDuration();
+            Message msg = Message.obtain();
+            msg.what = MUSIC_ACTION_SEEK_PLAY;
+            msg.arg1 = currentPosition;
+            msg.arg2 = totalDuration;
+            final int N = mListenerList.beginBroadcast();
+            for (int i = 0; i < N; i++) {
+                IMusicPlayerListener broadcastItem = mListenerList.getBroadcastItem(i);
+                if (broadcastItem != null) {
+                    broadcastItem.action(PLAYER_LISTENER_ACTION_NORMAL, msg);
+                }
+            }
+            mListenerList.finishBroadcast();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -258,14 +278,14 @@ public class MusicService extends Service implements
                 mMediaPlayer.setVolume(1.0f, 1.0f);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
-                // Lost focus for an unbounded amount of time: stop playback and release media player
+                // Lost focus for an unbounded amount of time: stopSong playback and release media player
                 if (mMediaPlayer.isPlaying())
                     mMediaPlayer.stop();
                 mMediaPlayer.release();
                 mMediaPlayer = null;
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                // Lost focus for a short time, but we have to stop
+                // Lost focus for a short time, but we have to stopSong
                 // playback. We don't release the media player because playback
                 // is likely to resume
                 if (mMediaPlayer.isPlaying())
