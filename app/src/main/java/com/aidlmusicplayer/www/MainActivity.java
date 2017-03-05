@@ -1,7 +1,15 @@
 package com.aidlmusicplayer.www;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
@@ -24,6 +32,8 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 
+import static com.aidlmusicplayer.www.App.app;
+
 
 /**
  * author：agxxxx on 2017/3/3 10:49
@@ -42,11 +52,12 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mRvContainer = ButterKnife.findById(this, R.id.rv_container);
+//        bindService();
+
 
 
         initVie();
         onRefresh();
-
     }
 
 
@@ -105,6 +116,73 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         loadData();
     }
 
+//    private void bindService() {
+//        Intent intent = new Intent(App.app, MusicService.class);
+//        bindService(intent, mServiceConnection, Service.BIND_AUTO_CREATE);
+//    }
+
+    private IMusicPlayer mMusicPlayerService;
+    ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mMusicPlayerService = IMusicPlayer.Stub.asInterface(service);
+
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+//            bindService();
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//        unbindService(mServiceConnection);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+        try {
+            showNotification();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+//        super.onBackPressed();
+    }
+    private void showNotification() throws RemoteException {
+
+        mMusicPlayerService = App.app.getMusicPlayerService();
+        SongListBean songListBean =
+                (SongListBean) mMusicPlayerService.getCurrentSongInfo().obj;
+        if (songListBean == null) {
+            return;
+        }
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Notification.Builder builder = new Notification.Builder(app);
+        builder.setContentText("主内容区");
+        builder.setContentTitle(songListBean.title);
+        builder.setTicker("音乐已移到后台");
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setAutoCancel(true);
+        builder.setWhen(System.currentTimeMillis());
+        Intent intent = new Intent(app, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(app, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        Notification notification = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            notification = builder.build();
+        }
+        notificationManager.notify(0, notification);
+    }
+
     class SongListAdapter extends BaseRecyclerViewAdapter<SongListBean>
             implements BaseRecyclerViewAdapter.OnItemClickListener<SongListBean> {
         public SongListAdapter(List<SongListBean> mDatum) {
@@ -136,6 +214,8 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
             startActivity(intent);
         }
     }
+
+
 
 
 }

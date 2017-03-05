@@ -1,12 +1,7 @@
 package com.aidlmusicplayer.www.activity;
 
-import android.app.Service;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.aidlmusicplayer.www.App;
 import com.aidlmusicplayer.www.IMusicPlayer;
 import com.aidlmusicplayer.www.IMusicPlayerListener;
 import com.aidlmusicplayer.www.R;
@@ -70,7 +66,8 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
     View mMusicsPlayerLoadingView;
     @Bind(R.id.musics_player_container)
     RelativeLayout mMusicsPlayerContainer;
-    private IMusicPlayer mMusicPlayer;
+    private IMusicPlayer mMusicPlayerService;
+
 
     @Bind(R.id.musics_player_seekbar)
     SeekBar mMusicsPlayerSeekbar;
@@ -78,7 +75,6 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
     private SimpleDateFormat mFormatter;
 
 
-    int FROM_THE_SERVER = 424;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,15 +82,16 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         setContentView(R.layout.activity_music);
         ButterKnife.bind(this);
 
-
         mMusicServiceBean = getIntent().getParcelableExtra(Constant.TAG_FLAG_1);
         setTitle("");
-
-        bindService();
-
+        mMusicPlayerService = App.app.getMusicPlayerService();
+        try {
+            mMusicPlayerService.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
+            mMusicPlayerService.registerListener(mPlayerListener);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
 //       a. get data
-
-
         mFormatter = new SimpleDateFormat("mm:ss");
         mMusicsPlayerSeekbar.setOnSeekBarChangeListener(this);
 
@@ -103,38 +100,12 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
 
     private void setTitleAndBackground(String title, String backgroundUrl) {
         setTitle(title);
-        Glide.with(this).load(backgroundUrl)
+        Glide.with(App.app).load(backgroundUrl)
                 .bitmapTransform(new BlurTransformation(this))
                 .into(mMusicsPlayerBackground);
     }
 
-    private void bindService() {
-        Intent intent = new Intent(this, MusicService.class);
-//        intent.putExtra(Constant.TAG_FLAG_5, new Messenger(mHandler));// use messenger
-        bindService(intent, mServiceConnection, Service.BIND_AUTO_CREATE);
-    }
 
-    ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mMusicPlayer = IMusicPlayer.Stub.asInterface(service);
-            try {
-                mMusicPlayer.asBinder().linkToDeath(mDeathRecipient, 0);
-                //playSong music
-                mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
-                mMusicPlayer.registerListener(mPlayerListener);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-
-
-        }
-    };
 
     IMusicPlayerListener mPlayerListener = new IMusicPlayerListener.Stub() {
         @Override
@@ -169,8 +140,6 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
                     mPlayerDiscView.loadAlbumCover(mMusicServiceBean.song_list.get(position).pic_big);
                     mPlayerDiscView.startPlay();
                     break;
-
-
                 default:
                     super.handleMessage(msg);
             }
@@ -178,25 +147,22 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         }
     };
 
-
-    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
-        @Override
-        public void binderDied() {
-            bindService();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            mMusicPlayerService.unregisterListener(mPlayerListener);
+            mPlayerListener = null;
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
-    };
 
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        unbindService(mServiceConnection);
-//        try {
-//            mMusicPlayer.unregisterListener(mPlayerListener);
-//        } catch (RemoteException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
+        mHandler.removeCallbacksAndMessages(null);
+        mHandler = null;
+    }
+
+
+
 
     /******************************************************************/
 
@@ -205,7 +171,7 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         try {
             switch (view.getId()) {
                 case R.id.musics_player_play_prev_btn:
-                    mMusicPlayer.action(MusicService.MUSIC_ACTION_PREVIOUS, "");
+                    mMusicPlayerService.action(MusicService.MUSIC_ACTION_PREVIOUS, "");
 
                     break;
                 case R.id.musics_player_play_ctrl_btn:
@@ -215,7 +181,7 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
                     break;
                 case R.id.musics_player_play_next_btn:
 
-                    mMusicPlayer.action(MusicService.MUSIC_ACTION_NEXT, "");
+                    mMusicPlayerService.action(MusicService.MUSIC_ACTION_NEXT, "");
 
                     break;
             }
@@ -227,16 +193,15 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
     private void onPayBtnPress() throws RemoteException {
         switch (MusicService.MUSIC_CURRENT_ACTION) {
             case MusicService.MUSIC_ACTION_PLAY:
-                mMusicPlayer.action(MusicService.MUSIC_ACTION_PAUSE, "");
+                mMusicPlayerService.action(MusicService.MUSIC_ACTION_PAUSE, "");
 
                 break;
             case MusicService.MUSIC_ACTION_STOP:
-                mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
+                mMusicPlayerService.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
 
                 break;
             case MusicService.MUSIC_ACTION_PAUSE:
-                mMusicPlayer.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
-
+                mMusicPlayerService.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
                 break;
         }
     }
@@ -256,7 +221,7 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
     public void onStopTrackingTouch(SeekBar seekBar) {
         try {
             seekBar.setProgress(seekBar.getProgress());
-            mMusicPlayer.action(MusicService.MUSIC_ACTION_SEEK_PLAY, String.valueOf(seekBar.getProgress()));
+            mMusicPlayerService.action(MusicService.MUSIC_ACTION_SEEK_PLAY, String.valueOf(seekBar.getProgress()));
         } catch (RemoteException e) {
             e.printStackTrace();
         }

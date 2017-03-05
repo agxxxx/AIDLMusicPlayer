@@ -50,6 +50,15 @@ public class MusicService extends Service implements
 
     public static int MUSIC_CURRENT_ACTION = -1;
 
+
+    public static final int MUSIC_PLAY_MODE_NORMAL = 2000;
+    public static final int MUSIC_PLAY_MODE_RANDOM = 2001;
+    public static final int MUSIC_PLAY_MODE_REPEAT = 2002;
+    public static final int MUSIC_PLAY_MODE_SINGLE = 2003;
+
+    public static final int MUSIC_CURRENT_MODE = -1;
+
+
     public static final int PLAYER_LISTENER_ACTION_NORMAL = 1001;
     /******************************************************************/
     private MediaPlayer mMediaPlayer;
@@ -65,7 +74,6 @@ public class MusicService extends Service implements
     Binder mBinder = new IMusicPlayer.Stub() {
         @Override
         public void action(int action, String datum) throws RemoteException {
-            ToastUtil.showShortToast(getApplicationContext(), "datum:" + datum + "  action:" + action);
             switch (action) {
                 case MUSIC_ACTION_PAUSE:
                     pauseSong();
@@ -98,6 +106,7 @@ public class MusicService extends Service implements
             }
         }
 
+
         @Override
         public void registerListener(IMusicPlayerListener listener) throws RemoteException {
             mListenerList.register(listener);
@@ -108,6 +117,15 @@ public class MusicService extends Service implements
         public void unregisterListener(IMusicPlayerListener listener) throws RemoteException {
             mListenerList.unregister(listener);
         }
+
+        @Override
+        public Message getCurrentSongInfo() throws RemoteException {
+            Message msg = Message.obtain();
+            msg.obj = mSong_list.get(currentPosition);
+            return msg;
+        }
+
+
     };
 
 
