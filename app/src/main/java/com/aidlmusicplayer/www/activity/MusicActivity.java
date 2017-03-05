@@ -25,6 +25,7 @@ import com.aidlmusicplayer.www.bean.MusicServiceBean;
 import com.aidlmusicplayer.www.config.Constant;
 import com.aidlmusicplayer.www.helper.GsonHelper;
 import com.aidlmusicplayer.www.service.MusicService;
+import com.aidlmusicplayer.www.ui.PlayerDiscView;
 import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
@@ -36,7 +37,8 @@ import jp.wasabeef.glide.transformations.BlurTransformation;
 
 public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
-
+    @Bind(R.id.musics_player_disc_view)
+    PlayerDiscView mPlayerDiscView;
     @Bind(R.id.musics_player_background)
     ImageView mMusicsPlayerBackground;
     @Bind(R.id.player_disc)
@@ -77,6 +79,7 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
 
 
     int FROM_THE_SERVER = 424;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,14 +88,9 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
 
 
         mMusicServiceBean = getIntent().getParcelableExtra(Constant.TAG_FLAG_1);
-        setTitle(mMusicServiceBean.song_list.get(mMusicServiceBean.position).title);
-
-        Glide.with(this).load(mMusicServiceBean.backgroundUrl)
-                .bitmapTransform(new BlurTransformation(this))
-                .into(mMusicsPlayerBackground);
+        setTitle("");
 
         bindService();
-
 
 //       a. get data
 
@@ -101,6 +99,13 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         mMusicsPlayerSeekbar.setOnSeekBarChangeListener(this);
 
 
+    }
+
+    private void setTitleAndBackground(String title, String backgroundUrl) {
+        setTitle(title);
+        Glide.with(this).load(backgroundUrl)
+                .bitmapTransform(new BlurTransformation(this))
+                .into(mMusicsPlayerBackground);
     }
 
     private void bindService() {
@@ -128,7 +133,6 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         public void onServiceDisconnected(ComponentName name) {
 
 
-
         }
     };
 
@@ -140,11 +144,10 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
     };
 
 
-
     private void updateSeek(Message msg) {
         int currentPosition = msg.arg1;
         int totalDuration = msg.arg2;
-        mMusicsPlayerTotalTime.setText( mFormatter.format(totalDuration));
+        mMusicsPlayerTotalTime.setText(mFormatter.format(totalDuration));
         mMusicsPlayerCurrentTime.setText(mFormatter.format(currentPosition));
         mMusicsPlayerSeekbar.setMax(totalDuration);
         mMusicsPlayerSeekbar.setProgress(currentPosition);
@@ -159,6 +162,15 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
                 case MusicService.MUSIC_ACTION_SEEK_PLAY:
                     updateSeek(msg);
                     break;
+                case MusicService.MUSIC_ACTION_PLAY:
+                    int position = msg.arg1;
+                    setTitleAndBackground(mMusicServiceBean.song_list.get(position).title,
+                            mMusicServiceBean.song_list.get(position).pic_big);
+                    mPlayerDiscView.loadAlbumCover(mMusicServiceBean.song_list.get(position).pic_big);
+                    mPlayerDiscView.startPlay();
+                    break;
+
+
                 default:
                     super.handleMessage(msg);
             }
@@ -216,12 +228,15 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         switch (MusicService.MUSIC_CURRENT_ACTION) {
             case MusicService.MUSIC_ACTION_PLAY:
                 mMusicPlayer.action(MusicService.MUSIC_ACTION_PAUSE, "");
+
                 break;
             case MusicService.MUSIC_ACTION_STOP:
                 mMusicPlayer.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
+
                 break;
             case MusicService.MUSIC_ACTION_PAUSE:
                 mMusicPlayer.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
+
                 break;
         }
     }

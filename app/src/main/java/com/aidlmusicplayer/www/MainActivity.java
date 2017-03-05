@@ -13,10 +13,10 @@ import com.aidlmusicplayer.www.bean.MusicServiceBean;
 import com.aidlmusicplayer.www.bean.SongBillListBean;
 import com.aidlmusicplayer.www.bean.SongListBean;
 import com.aidlmusicplayer.www.config.Constant;
-import com.aidlmusicplayer.www.image.ImageLoaderProxy;
 import com.aidlmusicplayer.www.net.NetCallBack;
 import com.aidlmusicplayer.www.net.NetManager;
 import com.aidlmusicplayer.www.util.ToastUtil;
+import com.bumptech.glide.Glide;
 import com.jcodecraeer.xrecyclerview.XRecyclerView;
 
 import java.util.ArrayList;
@@ -119,8 +119,8 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         @Override
         protected void onBind(ViewHolder holder, int position, SongListBean data) {
             ImageView imageView = holder.getImageView(R.id.iv_icon);
-            ImageLoaderProxy.getInstance().
-                    transform(MainActivity.this, data.pic_big, imageView);
+            Glide.with(MainActivity.this).load(data.pic_big)
+                    .into(imageView);
             holder.setTextView(R.id.tv_name, data.title);
         }
 

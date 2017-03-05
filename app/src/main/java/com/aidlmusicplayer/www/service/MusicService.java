@@ -86,23 +86,14 @@ public class MusicService extends Service implements
                 case MUSIC_ACTION_CONTINUE_PLAY:
                     continuePlaySong();
                     break;
-                /******************************************************************/
                 case MUSIC_ACTION_MUTE:
 
                     break;
                 case MUSIC_ACTION_PREVIOUS:
-                    if (currentPosition > 0) {
-                        currentPosition--;
-                    } else {
-                        currentPosition = mSong_list.size() - 1;
-                    }
-                    play();
+                    onActionPrevious();
                     break;
                 case MUSIC_ACTION_NEXT:
-                    if (++currentPosition >= mSong_list.size()) {
-                        currentPosition = 0;
-                    }
-                    play();
+                    onActionNext();
                     break;
             }
         }
@@ -119,23 +110,47 @@ public class MusicService extends Service implements
         }
     };
 
+
+    private void onActionPrevious() {
+        if (currentPosition > 0) {
+            currentPosition--;
+        } else {
+            currentPosition = mSong_list.size() - 1;
+        }
+        play();
+    }
+
+    private void onActionNext() {
+        if (++currentPosition >= mSong_list.size()) {
+            currentPosition = 0;
+        }
+        play();
+    }
+
+    private void onStartPlay() {
+        Message msg = Message.obtain();
+        msg.what = MUSIC_ACTION_PLAY;
+        msg.arg1 = currentPosition;
+        sendMessage(PLAYER_LISTENER_ACTION_NORMAL, msg);
+    }
+
     private void play() {
         SongListBean songListBean = mSong_list.get(currentPosition);
         String song_id = songListBean.song_id;
+
+
         NetManager.getInstance().getPaySongData(song_id, new NetCallBack<PaySongBean>() {
             @Override
             public void onSuccess(PaySongBean paySongBean) {
                 if (paySongBean != null && paySongBean.bitrate != null) {
+                    onStartPlay();
                     playSong(paySongBean.bitrate.file_link);
-                }else{
+                } else {
                     ToastUtil.showShortToast(getApplicationContext(), "音乐播放出错了");
                 }
             }
-            @Override
-            public void onFailure(String msg) {
-                ToastUtil.showShortToast(getApplicationContext(), msg);
-            }
         });
+
     }
 
 
@@ -153,12 +168,10 @@ public class MusicService extends Service implements
         mMediaPlayer.setOnErrorListener(this);
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
-
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
                 requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         super.onCreate();
     }
-
 
 
     @Override
@@ -175,6 +188,7 @@ public class MusicService extends Service implements
 
     public void playSong(String path) {
         try {
+            stopSong();
             mMediaPlayer.reset();//idle
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.prepare();
@@ -242,30 +256,36 @@ public class MusicService extends Service implements
     }
 
     private void onPaying() {
+        int currentPosition = mMediaPlayer.getCurrentPosition();
+        int totalDuration = mMediaPlayer.getDuration();
+        Message msg = Message.obtain();
+        msg.what = MUSIC_ACTION_SEEK_PLAY;
+        msg.arg1 = currentPosition;
+        msg.arg2 = totalDuration;
+        sendMessage(PLAYER_LISTENER_ACTION_NORMAL, msg);
+    }
+
+    private void sendMessage(int action, Message msg) {
         try {
-            int currentPosition = mMediaPlayer.getCurrentPosition();
-            int totalDuration = mMediaPlayer.getDuration();
-            Message msg = Message.obtain();
-            msg.what = MUSIC_ACTION_SEEK_PLAY;
-            msg.arg1 = currentPosition;
-            msg.arg2 = totalDuration;
             final int N = mListenerList.beginBroadcast();
             for (int i = 0; i < N; i++) {
                 IMusicPlayerListener broadcastItem = mListenerList.getBroadcastItem(i);
                 if (broadcastItem != null) {
-                    broadcastItem.action(PLAYER_LISTENER_ACTION_NORMAL, msg);
+
+                    broadcastItem.action(action, msg);
                 }
             }
             mListenerList.finishBroadcast();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+
     }
 
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-
+        onActionNext();
     }
 
     /******************************************************************/

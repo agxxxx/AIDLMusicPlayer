@@ -27,12 +27,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.aidlmusicplayer.www.R;
-import com.aidlmusicplayer.www.image.ImageLoader;
-import com.aidlmusicplayer.www.image.ImageLoaderProxy;
-import com.bumptech.glide.load.resource.bitmap.FitCenter;
+import com.bumptech.glide.Glide;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
 import com.nineoldandroids.view.ViewHelper;
+
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
 
 
 public class PlayerDiscView extends RelativeLayout {
@@ -208,12 +208,10 @@ public class PlayerDiscView extends RelativeLayout {
     }
 
     public void loadAlbumCover(String imageUrl) {
-        ImageLoaderProxy.getInstance().load(getContext(),
-                new ImageLoader.Builder()
-                        .load(imageUrl)
-                        .into(mAlbumCover)
-                        .transform(new FitCenter(getContext()))
-                        .build());
+
+        Glide.with(getContext()).load(imageUrl)
+                .bitmapTransform(new CropCircleTransformation(getContext()))
+                .into(mAlbumCover);
     }
 
 
