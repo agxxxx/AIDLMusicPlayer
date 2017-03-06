@@ -88,7 +88,6 @@ public class MusicActivity extends AppCompatActivity  {
             e.printStackTrace();
         }
 
-//       a. get data
         mMusicsPlayerSeekbar.setOnSeekBarChangeListener(new AgSeekBarChangeListener(mMusicPlayerService));
 
     }
@@ -140,8 +139,6 @@ public class MusicActivity extends AppCompatActivity  {
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
-
-
                     break;
                 default:
                     super.handleMessage(msg);

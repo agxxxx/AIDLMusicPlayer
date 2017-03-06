@@ -23,6 +23,7 @@ import com.aidlmusicplayer.www.net.NetManager;
 import com.aidlmusicplayer.www.util.ToastUtil;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,12 +53,11 @@ public class MusicService extends Service implements
     public static int MUSIC_CURRENT_ACTION = -1;
 
 
-    public static final int MUSIC_PLAY_MODE_NORMAL = 2000;
-    public static final int MUSIC_PLAY_MODE_RANDOM = 2001;
-    public static final int MUSIC_PLAY_MODE_REPEAT = 2002;
-    public static final int MUSIC_PLAY_MODE_SINGLE = 2003;
+    public static final int MUSIC_PLAY_MODE_RANDOM = 2001;//random
+    public static final int MUSIC_PLAY_MODE_REPEAT = 2002;//sequence
+    public static final int MUSIC_PLAY_MODE_SINGLE = 2003;//single
 
-    public static final int MUSIC_CURRENT_MODE = -1;
+    public static int MUSIC_CURRENT_MODE = MUSIC_PLAY_MODE_RANDOM;
 
 
     public static final int PLAYER_LISTENER_ACTION_NORMAL = 1001;
@@ -76,6 +76,8 @@ public class MusicService extends Service implements
         @Override
         public void action(int action, String datum) throws RemoteException {
             switch (action) {
+
+                ///*******************about play***********************************************/
                 case MUSIC_ACTION_PAUSE:
                     pauseSong();
                     break;
@@ -91,18 +93,35 @@ public class MusicService extends Service implements
                 case MUSIC_ACTION_CONTINUE_PLAY:
                     continuePlaySong();
                     break;
+                case MUSIC_ACTION_PREVIOUS:
+                    previousSong();
+                    break;
+                case MUSIC_ACTION_NEXT:
+                    modePlay();
+                    break;
                 case MUSIC_ACTION_MUTE:
 
                     break;
-                case MUSIC_ACTION_PREVIOUS:
-                    onActionPrevious();
-                    break;
-                case MUSIC_ACTION_NEXT:
-                    onActionNext();
+                default:
+                    ///*******************about play mode***********************************************/
+                    matchPlayMode(action);
                     break;
             }
         }
 
+        private void matchPlayMode(int action) {
+            switch (action) {
+                case MUSIC_PLAY_MODE_RANDOM:
+                    MUSIC_CURRENT_MODE = MUSIC_PLAY_MODE_RANDOM;
+                    break;
+                case MUSIC_PLAY_MODE_REPEAT:
+                    MUSIC_CURRENT_MODE = MUSIC_PLAY_MODE_REPEAT;
+                    break;
+                case MUSIC_PLAY_MODE_SINGLE:
+                    MUSIC_CURRENT_MODE = MUSIC_PLAY_MODE_SINGLE;
+                    break;
+            }
+        }
 
         @Override
         public void registerListener(IMusicPlayerListener listener) throws RemoteException {
@@ -125,6 +144,7 @@ public class MusicService extends Service implements
 
     };
 
+
     private void onActionPlay(String datum) {
         if (TextUtils.isEmpty(datum)) {
             play();
@@ -138,7 +158,7 @@ public class MusicService extends Service implements
     }
 
 
-    private void onActionPrevious() {
+    private void previousSong() {
         if (currentPosition > 0) {
             currentPosition--;
         } else {
@@ -147,7 +167,7 @@ public class MusicService extends Service implements
         play();
     }
 
-    private void onActionNext() {
+    private void nextSong() {
         if (++currentPosition >= mSong_list.size()) {
             currentPosition = 0;
         }
@@ -306,10 +326,27 @@ public class MusicService extends Service implements
 
     }
 
+    /******************about paly mode************************************************/
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        onActionNext();
+        modePlay();
+    }
+
+    private void modePlay() {
+        switch (MUSIC_CURRENT_MODE) {
+            case MUSIC_PLAY_MODE_RANDOM:
+                Random random = new Random();
+                currentPosition = random.nextInt(mSong_list.size());
+                play();
+                break;
+            case MUSIC_PLAY_MODE_REPEAT:
+                nextSong();
+                break;
+            case MUSIC_PLAY_MODE_SINGLE:
+                play();
+                break;
+        }
     }
 
     /******************************************************************/
