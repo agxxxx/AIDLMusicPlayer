@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.text.TextUtils;
 
 import com.aidlmusicplayer.www.IMusicPlayer;
 import com.aidlmusicplayer.www.IMusicPlayerListener;
@@ -85,6 +86,10 @@ public class MusicService extends Service implements
                     seekPlaySong(Integer.parseInt(datum));
                     break;
                 case MUSIC_ACTION_PLAY:
+                    if (TextUtils.isEmpty(datum)) {
+                        play();
+                        return;
+                    }
                     MusicServiceBean musicServiceBean = GsonHelper.getGson().fromJson(datum, MusicServiceBean.class);
                     currentPosition = musicServiceBean.position;
                     mSong_list.clear();
@@ -148,15 +153,12 @@ public class MusicService extends Service implements
     private void onStartPlay() {
         Message msg = Message.obtain();
         msg.what = MUSIC_ACTION_PLAY;
-        msg.arg1 = currentPosition;
         sendMessage(PLAYER_LISTENER_ACTION_NORMAL, msg);
     }
 
     private void play() {
         SongListBean songListBean = mSong_list.get(currentPosition);
         String song_id = songListBean.song_id;
-
-
         NetManager.getInstance().getPaySongData(song_id, new NetCallBack<PaySongBean>() {
             @Override
             public void onSuccess(PaySongBean paySongBean) {

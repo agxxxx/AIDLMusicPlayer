@@ -2,6 +2,7 @@ package com.aidlmusicplayer.www;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
@@ -12,9 +13,10 @@ import com.aidlmusicplayer.www.base.BaseRecyclerViewAdapter;
 import com.aidlmusicplayer.www.bean.MusicServiceBean;
 import com.aidlmusicplayer.www.bean.SongBillListBean;
 import com.aidlmusicplayer.www.bean.SongListBean;
-import com.aidlmusicplayer.www.config.Constant;
+import com.aidlmusicplayer.www.helper.GsonHelper;
 import com.aidlmusicplayer.www.net.NetCallBack;
 import com.aidlmusicplayer.www.net.NetManager;
+import com.aidlmusicplayer.www.service.MusicService;
 import com.aidlmusicplayer.www.util.ToastUtil;
 import com.bumptech.glide.Glide;
 import com.jcodecraeer.xrecyclerview.XRecyclerView;
@@ -105,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
     }
 
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -148,12 +149,19 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
             musicServiceBean.song_list = (ArrayList<SongListBean>) mSongListAdapter.getDatum();
             musicServiceBean.position = position;
             musicServiceBean.backgroundUrl = info.pic_big;
-            intent.putExtra(Constant.TAG_FLAG_1, musicServiceBean);
+//            intent.putExtra(Constant.TAG_FLAG_1, musicServiceBean);
+            try {
+                App.
+                        app.
+                        getMusicPlayerService().
+                        action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(musicServiceBean));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
             startActivity(intent);
         }
     }
-
-
 
 
 }
