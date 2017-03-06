@@ -101,7 +101,7 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
     private void setTitleAndBackground(String title, String backgroundUrl) {
         setTitle(title);
         Glide.with(App.app).load(backgroundUrl)
-                .bitmapTransform(new BlurTransformation(this))
+                .bitmapTransform(new BlurTransformation(App.app))
                 .into(mMusicsPlayerBackground);
     }
 
@@ -156,7 +156,6 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
         mHandler.removeCallbacksAndMessages(null);
         mHandler = null;
     }
@@ -194,14 +193,15 @@ public class MusicActivity extends AppCompatActivity implements SeekBar.OnSeekBa
         switch (MusicService.MUSIC_CURRENT_ACTION) {
             case MusicService.MUSIC_ACTION_PLAY:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_PAUSE, "");
-
+                mMusicsPlayerPlayCtrlBtn.setImageResource(R.drawable.btn_play_selector);
                 break;
             case MusicService.MUSIC_ACTION_STOP:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_PLAY, GsonHelper.getGson().toJson(mMusicServiceBean));
-
+                mMusicsPlayerPlayCtrlBtn.setImageResource(R.drawable.btn_pause_pressed);
                 break;
             case MusicService.MUSIC_ACTION_PAUSE:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
+                mMusicsPlayerPlayCtrlBtn.setImageResource(R.drawable.btn_pause_pressed);
                 break;
         }
     }
