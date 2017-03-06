@@ -86,15 +86,7 @@ public class MusicService extends Service implements
                     seekPlaySong(Integer.parseInt(datum));
                     break;
                 case MUSIC_ACTION_PLAY:
-                    if (TextUtils.isEmpty(datum)) {
-                        play();
-                        return;
-                    }
-                    MusicServiceBean musicServiceBean = GsonHelper.getGson().fromJson(datum, MusicServiceBean.class);
-                    currentPosition = musicServiceBean.position;
-                    mSong_list.clear();
-                    mSong_list.addAll(musicServiceBean.song_list);
-                    play();
+                    onActionPlay(datum);
                     break;
                 case MUSIC_ACTION_CONTINUE_PLAY:
                     continuePlaySong();
@@ -133,6 +125,18 @@ public class MusicService extends Service implements
 
     };
 
+    private void onActionPlay(String datum) {
+        if (TextUtils.isEmpty(datum)) {
+            play();
+            return;
+        }
+        MusicServiceBean musicServiceBean = GsonHelper.getGson().fromJson(datum, MusicServiceBean.class);
+        currentPosition = musicServiceBean.position;
+        mSong_list.clear();
+        mSong_list.addAll(musicServiceBean.song_list);
+        play();
+    }
+
 
     private void onActionPrevious() {
         if (currentPosition > 0) {
@@ -166,7 +170,7 @@ public class MusicService extends Service implements
                     onStartPlay();
                     playSong(paySongBean.bitrate.file_link);
                 } else {
-                    ToastUtil.showShortToast(getApplicationContext(), "音乐播放出错了");
+                    ToastUtil.showShortToast(getApplicationContext(), "Music playback error");
                 }
             }
         });
