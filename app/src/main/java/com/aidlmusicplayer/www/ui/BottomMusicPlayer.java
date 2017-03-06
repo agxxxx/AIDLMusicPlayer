@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * author：agxxxx on 2017/3/6 13:57
@@ -51,6 +52,8 @@ public class BottomMusicPlayer extends FrameLayout {
     SeekBar mMusicsPlayerSeekBar;
     @Bind(R.id.nav_play)
     LinearLayout mNavPlay;
+    @Bind(R.id.linear)
+    LinearLayout mLinear;
     private View mRootView;
 
 
@@ -77,8 +80,6 @@ public class BottomMusicPlayer extends FrameLayout {
         addView(mRootView);
 
     }
-
-
 
 
     public void registerListener(IMusicPlayer musicPlayerService) {
@@ -118,7 +119,7 @@ public class BottomMusicPlayer extends FrameLayout {
         mMusicsPlayerSeekBar.setProgress(currentPosition);
     }
 
-    private final int UPDATE_UI =23;
+    private final int UPDATE_UI = 23;
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -147,12 +148,52 @@ public class BottomMusicPlayer extends FrameLayout {
             if (songListBean == null) {
                 return;
             }
+            mControl.setImageResource(R.drawable.playbar_btn_pause);
             Glide.with(getContext()).load(songListBean.pic_big)
                     .into(mPlayBarImg);
             mPlayBarInfo.setText(songListBean.title);
+            mPlayBarSinger.setText(songListBean.author);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
+    @OnClick({R.id.play_list, R.id.control, R.id.play_next, R.id.nav_play})
+    public void onClick(View view) {
+        try {
+            switch (view.getId()) {
+                case R.id.play_list:
+
+                    break;
+                case R.id.play_next:
+                    if (mMusicPlayerService != null) {
+                        mMusicPlayerService.action(MusicService.MUSIC_ACTION_NEXT, "");
+                    }
+                    break;
+                case R.id.control:
+                    onPayBtnPress();
+                    break;
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void onPayBtnPress() throws RemoteException {
+        switch (MusicService.MUSIC_CURRENT_ACTION) {
+            case MusicService.MUSIC_ACTION_PLAY:
+                mMusicPlayerService.action(MusicService.MUSIC_ACTION_PAUSE, "");
+                mControl.setImageResource(R.drawable.playbar_btn_play);
+                break;
+            case MusicService.MUSIC_ACTION_STOP:
+                mMusicPlayerService.action(MusicService.MUSIC_ACTION_PLAY, "");
+                mControl.setImageResource(R.drawable.playbar_btn_pause);
+                break;
+            case MusicService.MUSIC_ACTION_PAUSE:
+                mMusicPlayerService.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
+                mControl.setImageResource(R.drawable.playbar_btn_pause);
+                break;
+        }
+    }
 }

@@ -6,13 +6,13 @@
               android:layout_alignParentBottom="true"
               android:background="@color/white"
               android:orientation="vertical">
+    <!--android:thumb="@drawable/thumb"-->
 
     <LinearLayout
         android:id="@+id/linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="-3dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@color/white"
         android:orientation="horizontal">
 
         <ImageView
@@ -32,21 +32,25 @@
             android:orientation="vertical">
 
             <TextView
+                android:layout_marginLeft="2dp"
                 android:id="@+id/play_bar_info"
                 android:layout_width="wrap_content"
-                android:layout_height="23dp"
+                android:layout_height="wrap_content"
                 android:ellipsize="marquee"
                 android:maxLines="1"
-                android:textSize="17dp"/>
+                android:textColor="@color/theme_text_color"
+                android:textSize="14sp"/>
 
             <TextView
+                android:layout_marginLeft="2dp"
                 android:id="@+id/play_bar_singer"
                 android:layout_width="wrap_content"
-                android:layout_height="16dp"
+                android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLength="20"
                 android:maxLines="1"
-                android:textSize="10dp"/>
+                android:textColor="@color/gray"
+                android:textSize="12sp"/>
         </LinearLayout>
 
 
@@ -75,15 +79,17 @@
     </LinearLayout>
 
     <SeekBar
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:id="@+id/musics_player_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:maxHeight="2dp"
+        android:progress="22"
         android:minHeight="2dp"
-        android:progress="0"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:thumb="@null"
         android:progressDrawable="@drawable/player_seekbar"
-        android:thumb="@drawable/thumb"
         android:thumbOffset="0dp"/>
 
 </LinearLayout>

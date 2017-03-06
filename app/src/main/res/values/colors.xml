@@ -9,7 +9,7 @@
     <color name="music_player_sb_progress_color">#FFE64626</color>
     <color name="music_player_sb_secondary_progress_color">#FFE87F6A</color>
     <color name="music_player_user_name_color">#FF1A7BE8</color>
-    
+    <color name="theme_text_color">#434343</color><!--主题颜色 -->
 
     <color name="theme_color">#FF4E3E7F</color><!--主题颜色 -->
 

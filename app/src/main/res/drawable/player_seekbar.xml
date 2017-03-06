@@ -6,7 +6,7 @@
     <item android:id="@android:id/background">
         <shape>
             <solid android:color="@color/white"/>
-            <size android:height="3dp"/>
+            <size android:height="2dp"/>
         </shape>
     </item>
 
@@ -14,7 +14,7 @@
         <clip>
             <shape>
                 <solid android:color="@color/white"/>
-                <size android:height="3dp"/>
+                <size android:height="2dp"/>
             </shape>
         </clip>
     </item>
@@ -23,7 +23,7 @@
         <clip>
             <shape>
                 <solid android:color="@color/music_player_sb_progress_color"/>
-                <size android:height="3dp"/>
+                <size android:height="2dp"/>
             </shape>
         </clip>
     </item>

@@ -338,9 +338,11 @@ public class MusicService extends Service implements
     private void modePlay() {
         switch (MUSIC_CURRENT_MODE) {
             case MUSIC_PLAY_MODE_RANDOM:
-                Random random = new Random();
-                currentPosition = random.nextInt(mSong_list.size());
-                play();
+                if (mSong_list!=null && mSong_list.size() > 0) {
+                    Random random = new Random();
+                    currentPosition = random.nextInt(mSong_list.size());
+                    play();
+                }
                 break;
             case MUSIC_PLAY_MODE_REPEAT:
                 nextSong();
