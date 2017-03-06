@@ -3,9 +3,11 @@ package com.aidlmusicplayer.www;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.aidlmusicplayer.www.activity.MusicActivity;
@@ -17,6 +19,7 @@ import com.aidlmusicplayer.www.helper.GsonHelper;
 import com.aidlmusicplayer.www.net.NetCallBack;
 import com.aidlmusicplayer.www.net.NetManager;
 import com.aidlmusicplayer.www.service.MusicService;
+import com.aidlmusicplayer.www.ui.BottomMusicPlayer;
 import com.aidlmusicplayer.www.util.ToastUtil;
 import com.bumptech.glide.Glide;
 import com.jcodecraeer.xrecyclerview.XRecyclerView;
@@ -38,16 +41,24 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
     private XRecyclerView mRvContainer;
     private ArrayList<SongListBean> mSong_list = new ArrayList<>();
     private SongListAdapter mSongListAdapter;
+    private FrameLayout mBottomContainer;
+    private BottomMusicPlayer mBottomMusicPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mRvContainer = ButterKnife.findById(this, R.id.rv_container);
+        mBottomContainer = ButterKnife.findById(this, R.id.fl_bottom_container);
 
 
         initVie();
         onRefresh();
+
+
+
+
+
     }
 
 
@@ -82,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
 
 
     private void initVie() {
+
+        mBottomMusicPlayer = new BottomMusicPlayer(this);
+        mBottomContainer.addView(mBottomMusicPlayer);
+
+
         StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);
         mRvContainer.setLayoutManager(staggeredGridLayoutManager);
@@ -89,6 +105,33 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         mSongListAdapter = new SongListAdapter(mSong_list);
         mSongListAdapter.setOnItemClickListener(mSongListAdapter);
         mRvContainer.setAdapter(mSongListAdapter);
+        /******************************************************************/
+
+
+    }
+
+
+
+
+    @Override
+    protected void onPause() {
+        mBottomMusicPlayer.unregisterListener();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                while (!App.linkSuccess) {
+                    SystemClock.sleep(300);
+                }
+                mBottomMusicPlayer.registerListener(App.app.getMusicPlayerService());
+            }
+        }.start();
     }
 
     @Override
@@ -145,11 +188,11 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         @Override
         public void onItemClick(View view, int position, SongListBean info) {
             Intent intent = new Intent(MainActivity.this, MusicActivity.class);
+            startActivity(intent);
             MusicServiceBean musicServiceBean = new MusicServiceBean();
             musicServiceBean.song_list = (ArrayList<SongListBean>) mSongListAdapter.getDatum();
             musicServiceBean.position = position;
             musicServiceBean.backgroundUrl = info.pic_big;
-//            intent.putExtra(Constant.TAG_FLAG_1, musicServiceBean);
             try {
                 App.
                         app.
@@ -159,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
                 e.printStackTrace();
             }
 
-            startActivity(intent);
+
         }
     }
 

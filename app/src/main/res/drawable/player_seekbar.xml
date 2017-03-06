@@ -5,7 +5,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background">
         <shape>
-            <solid android:color="@color/music_player_sb_bg"/>
+            <solid android:color="@color/white"/>
             <size android:height="3dp"/>
         </shape>
     </item>
@@ -13,7 +13,7 @@
     <item android:id="@android:id/secondaryProgress">
         <clip>
             <shape>
-                <solid android:color="@color/music_player_sb_secondary_progress_color"/>
+                <solid android:color="@color/white"/>
                 <size android:height="3dp"/>
             </shape>
         </clip>

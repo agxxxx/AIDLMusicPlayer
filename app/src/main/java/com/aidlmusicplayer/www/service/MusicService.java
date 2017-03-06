@@ -30,7 +30,7 @@ import java.util.TimerTask;
 /**
  * author：agxxxx on 2017/3/3 10:49
  * email：agxxxx@126.com
- * blog: http://blog.csdn.net/zuiaisha1
+ * blog: http://www.jianshu.com/u/c1a3c4c943e5
  * github: https://github.com/agxxxx
  * Created by Administrator on 2017/3/3.
  */
@@ -44,11 +44,11 @@ public class MusicService extends Service implements
     public static final int MUSIC_ACTION_PLAY = 255;
     public static final int MUSIC_ACTION_PREVIOUS = 256;
     public static final int MUSIC_ACTION_NEXT = 257;
-    public static final int MUSIC_ACTION_MUTE = 258;
     public static final int MUSIC_ACTION_PAUSE = 259;
     public static final int MUSIC_ACTION_STOP = 260;
     public static final int MUSIC_ACTION_CONTINUE_PLAY = 280;
     public static final int MUSIC_ACTION_SEEK_PLAY = 270;
+    public static final int MUSIC_ACTION_MUTE = 258;
 
     public static int MUSIC_CURRENT_ACTION = -1;
 
@@ -61,6 +61,7 @@ public class MusicService extends Service implements
 
 
     public static final int PLAYER_LISTENER_ACTION_NORMAL = 1001;
+    public static final int PLAYER_LISTENER_ACTION_DANGER = 1005;
     /******************************************************************/
     private MediaPlayer mMediaPlayer;
     private Timer mTimer;
@@ -100,7 +101,7 @@ public class MusicService extends Service implements
                     modePlay();
                     break;
                 case MUSIC_ACTION_MUTE:
-
+                    mMediaPlayer.setVolume(0f, 0f);
                     break;
                 default:
                     ///*******************about play mode***********************************************/
@@ -136,12 +137,13 @@ public class MusicService extends Service implements
 
         @Override
         public Message getCurrentSongInfo() throws RemoteException {
+
             Message msg = Message.obtain();
-            msg.obj = mSong_list.get(currentPosition);
+            if (mSong_list!=null && mSong_list.size() > 0) {
+                msg.obj = mSong_list.get(currentPosition);
+            }
             return msg;
         }
-
-
     };
 
 
@@ -326,7 +328,7 @@ public class MusicService extends Service implements
 
     }
 
-    /******************about paly mode************************************************/
+    /******************about play mode************************************************/
 
     @Override
     public void onCompletion(MediaPlayer mp) {

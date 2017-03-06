@@ -16,7 +16,6 @@ import android.os.RemoteException;
 
 import com.aidlmusicplayer.www.bean.SongListBean;
 import com.aidlmusicplayer.www.service.MusicService;
-import com.aidlmusicplayer.www.util.ToastUtil;
 
 /**
  * author：agxxxx on 2017/3/4 14:49
@@ -42,6 +41,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
 
 
     public IMusicPlayer getMusicPlayerService() {
+
         return mMusicPlayerService;
     }
 
@@ -51,11 +51,12 @@ public class App extends Application implements Application.ActivityLifecycleCal
     }
 
 
+    static boolean linkSuccess;
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mMusicPlayerService = IMusicPlayer.Stub.asInterface(service);
-
+            linkSuccess = true;
         }
 
         @Override
@@ -92,6 +93,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
 
 
     int isCurrentRunningForeground;
+
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
 

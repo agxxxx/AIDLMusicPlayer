@@ -69,7 +69,7 @@ public class MusicActivity extends AppCompatActivity  {
 
 
     @Bind(R.id.musics_player_seekbar)
-    SeekBar mMusicsPlayerSeekbar;
+    SeekBar mMusicsPlayerSeekBar;
 
     private SimpleDateFormat mFormatter = new SimpleDateFormat("mm:ss");
 
@@ -88,7 +88,8 @@ public class MusicActivity extends AppCompatActivity  {
             e.printStackTrace();
         }
 
-        mMusicsPlayerSeekbar.setOnSeekBarChangeListener(new AgSeekBarChangeListener(mMusicPlayerService));
+        mMusicsPlayerSeekBar.setOnSeekBarChangeListener(new AgSeekBarChangeListener(mMusicPlayerService));
+        onPlay();
 
     }
 
@@ -113,8 +114,8 @@ public class MusicActivity extends AppCompatActivity  {
         int totalDuration = msg.arg2;
         mMusicsPlayerTotalTime.setText(mFormatter.format(totalDuration));
         mMusicsPlayerCurrentTime.setText(mFormatter.format(currentPosition));
-        mMusicsPlayerSeekbar.setMax(totalDuration);
-        mMusicsPlayerSeekbar.setProgress(currentPosition);
+        mMusicsPlayerSeekBar.setMax(totalDuration);
+        mMusicsPlayerSeekBar.setProgress(currentPosition);
     }
 
 
@@ -127,18 +128,7 @@ public class MusicActivity extends AppCompatActivity  {
                     updateSeek(msg);
                     break;
                 case MusicService.MUSIC_ACTION_PLAY:
-                    mMusicPlayerService = App.app.getMusicPlayerService();
-                    try {
-                        SongListBean songListBean =
-                                (SongListBean) mMusicPlayerService.getCurrentSongInfo().obj;
-                        setTitleAndBackground(songListBean.title,
-                                songListBean.pic_big);
-                        mMusicsPlayerPlayCtrlBtn.setImageResource(R.drawable.btn_pause_pressed);
-                        mPlayerDiscView.loadAlbumCover(songListBean.pic_big);
-                        mPlayerDiscView.startPlay();
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    onPlay();
                     break;
                 default:
                     super.handleMessage(msg);
@@ -147,10 +137,28 @@ public class MusicActivity extends AppCompatActivity  {
         }
     };
 
+    private void onPlay() {
+        mMusicPlayerService = App.app.getMusicPlayerService();
+        try {
+            SongListBean songListBean =
+                    (SongListBean) mMusicPlayerService.getCurrentSongInfo().obj;
+            if (songListBean == null) {
+                return;
+            }
+            setTitleAndBackground(songListBean.title,
+                    songListBean.pic_big);
+            mMusicsPlayerPlayCtrlBtn.setImageResource(R.drawable.btn_pause_pressed);
+            mPlayerDiscView.loadAlbumCover(songListBean.pic_big);
+            mPlayerDiscView.startPlay();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         try {
             mMusicPlayerService.unregisterListener(mPlayerListener);
             mPlayerListener = null;
@@ -159,6 +167,11 @@ public class MusicActivity extends AppCompatActivity  {
         }
         mHandler.removeCallbacksAndMessages(null);
         mHandler = null;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
 
