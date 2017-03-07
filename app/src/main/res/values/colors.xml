@@ -17,6 +17,11 @@
     <color name="sr_color_primary_dark">#FF4E3E7F</color>
     <color name="sr_window_background">#FFFEFEFE</color>
 
+
+
+    <color name="notification_bak">#47fafafa</color>
+
+
     <color name="transparent">#00000000</color>
     <color name="navpage">#FFE1E8EB</color>
     <color name="pink">#ffc0cb</color><!--粉红色 -->

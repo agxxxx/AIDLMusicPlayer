@@ -148,7 +148,7 @@ public class BottomMusicPlayer extends FrameLayout {
             if (songListBean == null) {
                 return;
             }
-            mControl.setImageResource(R.drawable.playbar_btn_pause);
+            mControl.setImageResource(R.mipmap.playbar_btn_pause);
             Glide.with(getContext()).load(songListBean.pic_big)
                     .into(mPlayBarImg);
             mPlayBarInfo.setText(songListBean.title);
@@ -184,15 +184,15 @@ public class BottomMusicPlayer extends FrameLayout {
         switch (MusicService.MUSIC_CURRENT_ACTION) {
             case MusicService.MUSIC_ACTION_PLAY:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_PAUSE, "");
-                mControl.setImageResource(R.drawable.playbar_btn_play);
+                mControl.setImageResource(R.mipmap.playbar_btn_play);
                 break;
             case MusicService.MUSIC_ACTION_STOP:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_PLAY, "");
-                mControl.setImageResource(R.drawable.playbar_btn_pause);
+                mControl.setImageResource(R.mipmap.playbar_btn_pause);
                 break;
             case MusicService.MUSIC_ACTION_PAUSE:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
-                mControl.setImageResource(R.drawable.playbar_btn_pause);
+                mControl.setImageResource(R.mipmap.playbar_btn_pause);
                 break;
         }
     }

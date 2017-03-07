@@ -16,6 +16,7 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:src="@mipmap/placeholder_disk_210"
             android:id="@+id/play_bar_img"
             android:layout_width="43dp"
             android:layout_height="43dp"
@@ -60,14 +61,14 @@
             android:layout_height="43dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:onClick="click_last"
-            android:src="@drawable/playbar_btn_playlist"/>
+            android:src="@mipmap/playbar_btn_playlist"/>
 
         <ImageView
             android:id="@+id/control"
             android:layout_width="41dp"
             android:layout_height="46dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/playbar_btn_play"/>
+            android:src="@mipmap/playbar_btn_play"/>
 
         <ImageView
             android:id="@+id/play_next"
@@ -75,16 +76,16 @@
             android:layout_height="43dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:onClick="click_next"
-            android:src="@drawable/playbar_btn_next"/>
+            android:src="@mipmap/playbar_btn_next"/>
     </LinearLayout>
 
     <SeekBar
+        android:layout_marginTop="1.5dp"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:id="@+id/musics_player_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxHeight="2dp"
-        android:progress="22"
         android:minHeight="2dp"
         android:paddingLeft="0dp"
         android:paddingRight="0dp"

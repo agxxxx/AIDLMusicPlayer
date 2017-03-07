@@ -2,20 +2,16 @@ package com.aidlmusicplayer.www;
 
 import android.app.Activity;
 import android.app.Application;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-import com.aidlmusicplayer.www.bean.SongListBean;
 import com.aidlmusicplayer.www.service.MusicService;
+import com.aidlmusicplayer.www.ui.MusicNotification;
 
 /**
  * author：agxxxx on 2017/3/4 14:49
@@ -29,6 +25,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
 
     public static App app;
     private IMusicPlayer mMusicPlayerService;
+    private MusicNotification mMusicNotification;
 
 
     @Override
@@ -66,29 +63,12 @@ public class App extends Application implements Application.ActivityLifecycleCal
     };
 
     private void showNotification() throws RemoteException {
-        mMusicPlayerService = App.app.getMusicPlayerService();
-        SongListBean songListBean =
-                (SongListBean) mMusicPlayerService.getCurrentSongInfo().obj;
-        if (songListBean == null) {
-            return;
+        if (mMusicNotification == null) {
+            mMusicNotification = new MusicNotification(app, mMusicPlayerService);
         }
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        Notification.Builder builder = new Notification.Builder(app);
-        builder.setContentText("主内容区");
-        builder.setContentTitle(songListBean.title);
-        builder.setTicker("音乐已移到后台");
-        builder.setSmallIcon(R.mipmap.ic_launcher);
-        builder.setAutoCancel(true);
-        builder.setWhen(System.currentTimeMillis());
-        Intent intent = new Intent(app, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(app, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.setContentIntent(pendingIntent);
-        Notification notification = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            notification = builder.build();
-        }
-        notificationManager.notify(0, notification);
+        mMusicNotification.notifyMusic();
+
+
     }
 
 

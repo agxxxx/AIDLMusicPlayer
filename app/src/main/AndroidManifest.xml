@@ -30,6 +30,17 @@
 
         <activity android:name=".activity.MusicActivity">
         </activity>
+
+
+        <receiver
+            android:name=".receiver.NotificationReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.aidlmusicplayer.www.action.music.play"/>
+                <action android:name="com.aidlmusicplayer.www.action.music.next"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

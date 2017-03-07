@@ -20,6 +20,7 @@ import com.aidlmusicplayer.www.bean.SongListBean;
 import com.aidlmusicplayer.www.helper.GsonHelper;
 import com.aidlmusicplayer.www.net.NetCallBack;
 import com.aidlmusicplayer.www.net.NetManager;
+import com.aidlmusicplayer.www.net.log.AGLog;
 import com.aidlmusicplayer.www.util.ToastUtil;
 
 import java.util.ArrayList;
@@ -126,20 +127,24 @@ public class MusicService extends Service implements
 
         @Override
         public void registerListener(IMusicPlayerListener listener) throws RemoteException {
-            mListenerList.register(listener);
+            if (listener != null) {
+                mListenerList.register(listener);
+            }
 
         }
 
         @Override
         public void unregisterListener(IMusicPlayerListener listener) throws RemoteException {
-            mListenerList.unregister(listener);
+            if (listener != null) {
+                mListenerList.unregister(listener);
+            }
         }
 
         @Override
         public Message getCurrentSongInfo() throws RemoteException {
 
             Message msg = Message.obtain();
-            if (mSong_list!=null && mSong_list.size() > 0) {
+            if (mSong_list != null && mSong_list.size() > 0) {
                 msg.obj = mSong_list.get(currentPosition);
             }
             return msg;
@@ -176,10 +181,35 @@ public class MusicService extends Service implements
         play();
     }
 
+    private void onPaying() {
+        int currentPosition = mMediaPlayer.getCurrentPosition();
+        int totalDuration = mMediaPlayer.getDuration();
+        Message msg = Message.obtain();
+        msg.what = MUSIC_ACTION_SEEK_PLAY;
+        msg.arg1 = currentPosition;
+        msg.arg2 = totalDuration;
+        sendMessage(PLAYER_LISTENER_ACTION_NORMAL, msg);
+    }
+
+    public void onPausePlay() {
+        Message msg = Message.obtain();
+        msg.what = MUSIC_ACTION_PLAY;
+        msg.arg1 = 1;
+        sendMessage(MUSIC_ACTION_PLAY, msg);
+    }
+
     private void onStartPlay() {
         Message msg = Message.obtain();
         msg.what = MUSIC_ACTION_PLAY;
-        sendMessage(PLAYER_LISTENER_ACTION_NORMAL, msg);
+        msg.arg1 = 1;
+        sendMessage(MUSIC_ACTION_PLAY, msg);
+    }
+
+    private void onStopPlay() {
+        Message msg = Message.obtain();
+        msg.what = MUSIC_ACTION_STOP;
+        msg.arg1 = 1;
+        sendMessage(MUSIC_ACTION_PLAY, msg);
     }
 
     private void play() {
@@ -202,7 +232,6 @@ public class MusicService extends Service implements
 
     @Override
     public IBinder onBind(Intent intent) {
-//        mMessenger = intent.getParcelableExtra(Constant.TAG_FLAG_5);
         // TODO: Return the communication channel to the service.
         return mBinder;
     }
@@ -250,6 +279,7 @@ public class MusicService extends Service implements
         if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
             mMediaPlayer.pause();
             MUSIC_CURRENT_ACTION = MUSIC_ACTION_PAUSE;
+            onPausePlay();
         }
     }
 
@@ -258,6 +288,7 @@ public class MusicService extends Service implements
         if (mMediaPlayer != null && !mMediaPlayer.isPlaying()) {
             mMediaPlayer.start();
             MUSIC_CURRENT_ACTION = MUSIC_ACTION_PLAY;
+            onStartPlay();
         }
     }
 
@@ -301,34 +332,30 @@ public class MusicService extends Service implements
         }, 0, 1000);
     }
 
-    private void onPaying() {
-        int currentPosition = mMediaPlayer.getCurrentPosition();
-        int totalDuration = mMediaPlayer.getDuration();
-        Message msg = Message.obtain();
-        msg.what = MUSIC_ACTION_SEEK_PLAY;
-        msg.arg1 = currentPosition;
-        msg.arg2 = totalDuration;
-        sendMessage(PLAYER_LISTENER_ACTION_NORMAL, msg);
-    }
-
     private void sendMessage(int action, Message msg) {
         try {
             final int N = mListenerList.beginBroadcast();
             for (int i = 0; i < N; i++) {
                 IMusicPlayerListener broadcastItem = mListenerList.getBroadcastItem(i);
                 if (broadcastItem != null) {
-
                     broadcastItem.action(action, msg);
                 }
             }
-            mListenerList.finishBroadcast();
         } catch (RemoteException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                mListenerList.finishBroadcast();
+            } catch (IllegalArgumentException illegalArgumentException) {
+                AGLog.e("Error while diffusing message to listener  finishBroadcast ", illegalArgumentException);
+            }
         }
 
     }
 
-    /******************about play mode************************************************/
+    /******************
+     * about play mode
+     ************************************************/
 
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -338,7 +365,7 @@ public class MusicService extends Service implements
     private void modePlay() {
         switch (MUSIC_CURRENT_MODE) {
             case MUSIC_PLAY_MODE_RANDOM:
-                if (mSong_list!=null && mSong_list.size() > 0) {
+                if (mSong_list != null && mSong_list.size() > 0) {
                     Random random = new Random();
                     currentPosition = random.nextInt(mSong_list.size());
                     play();
