@@ -47,13 +47,9 @@ public class MusicNotification {
         this.mMusicPlayerService = mMusicPlayerService;
         mContext = context;
         mNotificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        try {
-            mMusicPlayerService.registerListener(mPlayerListener);
 
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
     }
+
 
     IMusicPlayerListener mPlayerListener = new IMusicPlayerListener.Stub() {
         @Override
@@ -68,6 +64,15 @@ public class MusicNotification {
         }
     };
 
+    public void registerListener() {
+        try {
+            if (mMusicPlayerService != null) {
+                mMusicPlayerService.registerListener(mPlayerListener);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void unregisterListener() {
         if (mMusicPlayerService != null) {
@@ -86,7 +91,6 @@ public class MusicNotification {
      * 3.next
      * 4.open
      * 5.close
-     *
      * @param context
      * @param mMusicPlayerService
      * @return
@@ -103,7 +107,6 @@ public class MusicNotification {
             RemoteViews remoteView = createRemoteView(context);
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setContent(remoteView);
-//            builder.setContentText("主内容区");
             builder.setContentTitle(songListBean.title);
             builder.setTicker("音乐已移到后台");
             builder.setSmallIcon(R.mipmap.ic_launcher);
@@ -154,7 +157,6 @@ public class MusicNotification {
         }
 
 
-
         Intent intent = new Intent(NotificationReceiver.ACTION_MUSIC_PLAY);
         intent.putExtra(Constant.TAG_FLAG_1, MusicService.MUSIC_ACTION_PLAY);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -167,6 +169,8 @@ public class MusicNotification {
         remoteViews.setOnClickPendingIntent(R.id.iv_next, nextPendingIntent);
 
 //        5.close
+//        ....
+
         return remoteViews;
     }
 

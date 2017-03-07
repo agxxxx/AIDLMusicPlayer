@@ -50,15 +50,8 @@ public class MainActivity extends AppCompatActivity implements XRecyclerView.Loa
         setContentView(R.layout.activity_main);
         mRvContainer = ButterKnife.findById(this, R.id.rv_container);
         mBottomContainer = ButterKnife.findById(this, R.id.fl_bottom_container);
-
-
         initVie();
         onRefresh();
-
-
-
-
-
     }
 
 

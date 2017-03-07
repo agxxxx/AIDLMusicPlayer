@@ -62,29 +62,29 @@ public class App extends Application implements Application.ActivityLifecycleCal
         }
     };
 
-    private void showNotification() throws RemoteException {
-        if (mMusicNotification == null) {
-            mMusicNotification = new MusicNotification(app, mMusicPlayerService);
-        }
-        mMusicNotification.notifyMusic();
 
-
-    }
 
 
     int isCurrentRunningForeground;
 
-    @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
-    }
 
     @Override
     public void onActivityStarted(Activity activity) {
         if (isCurrentRunningForeground == 0) {// front
+            if (mMusicNotification != null) {
+                mMusicNotification.unregisterListener();
+            }
         }
         isCurrentRunningForeground++;
     }
+    private void showNotification() throws RemoteException {
+        if (mMusicNotification == null) {
+            mMusicNotification = new MusicNotification(app, mMusicPlayerService);
+        }
+        mMusicNotification.registerListener();
+        mMusicNotification.notifyMusic();
+    }
+
 
     @Override
     public void onActivityStopped(Activity activity) {
@@ -118,4 +118,9 @@ public class App extends Application implements Application.ActivityLifecycleCal
     public void onActivityDestroyed(Activity activity) {
 
     }
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.aidlmusicplayer.www.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
@@ -16,6 +17,7 @@ import com.aidlmusicplayer.www.App;
 import com.aidlmusicplayer.www.IMusicPlayer;
 import com.aidlmusicplayer.www.IMusicPlayerListener;
 import com.aidlmusicplayer.www.R;
+import com.aidlmusicplayer.www.activity.MusicActivity;
 import com.aidlmusicplayer.www.bean.SongListBean;
 import com.aidlmusicplayer.www.iml.AgSeekBarChangeListener;
 import com.aidlmusicplayer.www.service.MusicService;
@@ -173,7 +175,13 @@ public class BottomMusicPlayer extends FrameLayout {
                 case R.id.control:
                     onPayBtnPress();
                     break;
+                case R.id.nav_play:
+                    Intent intent = new Intent(getContext(), MusicActivity.class);
+                    getContext().startActivity(intent);
+                    break;
             }
+
+
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -184,15 +192,14 @@ public class BottomMusicPlayer extends FrameLayout {
         switch (MusicService.MUSIC_CURRENT_ACTION) {
             case MusicService.MUSIC_ACTION_PLAY:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_PAUSE, "");
-                mControl.setImageResource(R.mipmap.playbar_btn_play);
+                mControl.setImageResource(R.mipmap.playbar_btn_pause);
                 break;
             case MusicService.MUSIC_ACTION_STOP:
-                mMusicPlayerService.action(MusicService.MUSIC_ACTION_PLAY, "");
-                mControl.setImageResource(R.mipmap.playbar_btn_pause);
+                mControl.setImageResource(R.mipmap.playbar_btn_play);
                 break;
             case MusicService.MUSIC_ACTION_PAUSE:
                 mMusicPlayerService.action(MusicService.MUSIC_ACTION_CONTINUE_PLAY, "");
-                mControl.setImageResource(R.mipmap.playbar_btn_pause);
+                mControl.setImageResource(R.mipmap.playbar_btn_play);
                 break;
         }
     }
