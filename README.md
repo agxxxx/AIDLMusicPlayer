@@ -38,5 +38,5 @@
 
 
 
-## 代码下载
-https://github.com/agxxxx/AIDLMusicPlayer
+## 博客地址
+http://blog.csdn.net/zuiaisha1/article/details/61201146
